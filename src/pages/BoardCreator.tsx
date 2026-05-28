@@ -12,7 +12,7 @@ type AnswerRow = {
   id: number;
   answer: string;
   count: number;
-  category: number | null;
+  categoryId: number | null;
 };
 
 type CategoryRowProps = CategoryRow & {
@@ -40,25 +40,25 @@ const initialAnswerData: AnswerRow[] = [
     id: 1,
     answer: "synth",
     count: 10,
-    category: null,
+    categoryId: null,
   },
   {
     id: 2,
     answer: "synthesizer",
     count: 5,
-    category: null,
+    categoryId: null,
   },
   {
     id: 3,
     answer: "sax",
     count: 3,
-    category: null,
+    categoryId: null,
   },
   {
     id: 4,
     answer: "saxophone",
     count: 2,
-    category: null,
+    categoryId: null,
   },
 ];
 
@@ -92,13 +92,13 @@ export default function BoardCreator() {
 
       // Update counts and scores but DO NOT reorder positions while typing to preserve input focus
       const totalAssigned = answerRows.reduce(
-        (sum, r) => (r.category !== null ? sum + r.count : sum),
+        (sum, r) => (r.categoryId !== null ? sum + r.count : sum),
         0,
       );
 
       const updated = withAdded.map((row) => {
         const count = answerRows
-          .filter((a) => a.category === row.id)
+          .filter((a) => a.categoryId === row.id)
           .reduce((s, r) => s + r.count, 0);
         const score =
           totalAssigned > 0 ? Math.round((count / totalAssigned) * 100) : 0;
@@ -120,13 +120,13 @@ export default function BoardCreator() {
     answers: AnswerRow[],
   ) {
     const totalAssigned = answers.reduce(
-      (sum, r) => (r.category !== null ? sum + r.count : sum),
+      (sum, r) => (r.categoryId !== null ? sum + r.count : sum),
       0,
     );
 
     const updated = categories.map((cat) => {
       const count = answers
-        .filter((a) => a.category === cat.id)
+        .filter((a) => a.categoryId === cat.id)
         .reduce((s, r) => s + r.count, 0);
 
       const score =
@@ -153,8 +153,8 @@ export default function BoardCreator() {
 
         // Toggle: if the clicked answer already has the selected category, deselect it
         const newCategory =
-          row.category === selectedCategory ? null : selectedCategory;
-        return { ...row, category: newCategory };
+          row.categoryId === selectedCategory ? null : selectedCategory;
+        return { ...row, categoryId: newCategory };
       });
 
       // Recalculate category counts based on the sum of `count` on assigned answers
@@ -200,15 +200,15 @@ export default function BoardCreator() {
     id,
     answer,
     count,
-    category,
+    categoryId,
     selectedCategory,
     onAnswerRowClick,
   }: AnswerRowProps) => (
     <div
-      className={`table-row${category === selectedCategory && selectedCategory !== null ? " selected" : ""}`}
+      className={`table-row${categoryId === selectedCategory && selectedCategory !== null ? " selected" : ""}`}
       onClick={() => onAnswerRowClick(id)}
     >
-      <span>{id}</span>
+      <span>{`${categoryId ?? "X"}`}</span>
 
       <span className="answer-column">{answer}</span>
 
