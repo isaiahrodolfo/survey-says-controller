@@ -1,0 +1,183 @@
+@font-face {
+  font-family: "SourceSansPro";
+  src: url("https://design.penpot.app/fonts/sourcesanspro-regular.woff")
+    format("woff");
+  font-weight: 400;
+  font-style: normal;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "SourceSansPro", sans-serif;
+  background: white;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+}
+
+.board-creator {
+  width: 100%;
+  max-width: 1200px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+
+  padding: 64px 48px;
+}
+
+/* QUESTION SELECTOR */
+
+.question-selector {
+  width: 280px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.question-number {
+  margin: 0;
+
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.arrow-button {
+  width: 45px;
+  height: 45px;
+
+  border: none;
+  background: #b1b2b5;
+  cursor: pointer;
+
+  font-size: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: background 0.2s ease;
+}
+
+.arrow-button:hover {
+  background: #98999c;
+}
+
+/* QUESTION */
+
+.question-text {
+  margin: 0;
+
+  font-size: 18px;
+  text-align: center;
+}
+
+/* BOTTOM SECTION */
+
+.bottom-section {
+  width: 100%;
+
+  display: flex;
+  gap: 48px;
+
+  align-items: flex-start;
+}
+
+@media (max-width: 900px) {
+  .bottom-section {
+    flex-direction: column;
+  }
+}
+
+/* TABLES */
+
+.table-container {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.table-header,
+.table-row {
+  display: grid;
+  align-items: center;
+
+  column-gap: 16px;
+}
+
+.table-header {
+  font-size: 16px;
+}
+
+.table-row {
+  font-size: 24px;
+}
+
+/* CATEGORY TABLE */
+
+.table-header {
+  grid-template-columns: 55px 1fr 55px 55px;
+}
+
+.table-row {
+  grid-template-columns: 55px 1fr 55px 55px;
+}
+
+/* ANSWERS TABLE */
+
+.answers-header {
+  grid-template-columns: 55px 1fr 55px;
+}
+
+.answers-row {
+  grid-template-columns: 55px 1fr 55px;
+}
+
+/* SHARED */
+
+.answer-column {
+  text-align: left;
+}
+
+.table-header span:not(.answer-column),
+.table-row span:not(.answer-column) {
+  text-align: center;
+}
+
+.table-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* START BUTTON */
+
+.start-game-button {
+  border: none;
+  background: #b1b2b5;
+
+  padding: 14px 32px;
+
+  font-size: 18px;
+  font-family: inherit;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+}
+
+.start-game-button:hover {
+  background: #98999c;
+}
