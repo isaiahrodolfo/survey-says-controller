@@ -205,7 +205,7 @@ export default function BoardCreator() {
     onAnswerRowClick,
   }: AnswerRowProps) => (
     <div
-      className={`table-row${categoryId === selectedCategory && selectedCategory !== null ? " selected" : ""}`}
+      className={`table-row${categoryId === selectedCategory && selectedCategory !== null ? " selected" : ""} answers-row`}
       onClick={() => onAnswerRowClick(id)}
     >
       <span>{`${categoryId ?? "X"}`}</span>
