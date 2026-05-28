@@ -5,6 +5,7 @@ type CategoryRow = {
   answer: string;
   count: number;
   score: number;
+  position: number;
 };
 
 type AnswerRow = {
@@ -30,6 +31,7 @@ const initialCategoryData: CategoryRow[] = [
     answer: "",
     count: 0,
     score: 0,
+    position: 1,
   },
 ];
 
@@ -74,21 +76,73 @@ export default function BoardCreator() {
 
       // Check if all rows are filled, if so add a new empty row
       const allFilled = nextRows.every((row) => row.answer.trim() !== "");
+      let withAdded = nextRows;
       if (allFilled) {
-        return [
+        withAdded = [
           ...nextRows,
           {
             id: nextRows.length + 1,
             answer: "",
             count: 0,
             score: 0,
+            position: nextRows.length + 1,
           },
         ];
       }
 
-      return nextRows;
+      // Update counts and scores but DO NOT reorder positions while typing to preserve input focus
+      const totalAssigned = answerRows.reduce(
+        (sum, r) => (r.category !== null ? sum + r.count : sum),
+        0,
+      );
+
+      const updated = withAdded.map((row) => {
+        const count = answerRows
+          .filter((a) => a.category === row.id)
+          .reduce((s, r) => s + r.count, 0);
+        const score =
+          totalAssigned > 0 ? Math.round((count / totalAssigned) * 100) : 0;
+
+        return {
+          ...row,
+          count,
+          score,
+          position: row.position ?? row.id,
+        };
+      });
+
+      return updated;
     });
   };
+
+  function recomputeCategories(
+    categories: CategoryRow[],
+    answers: AnswerRow[],
+  ) {
+    const totalAssigned = answers.reduce(
+      (sum, r) => (r.category !== null ? sum + r.count : sum),
+      0,
+    );
+
+    const updated = categories.map((cat) => {
+      const count = answers
+        .filter((a) => a.category === cat.id)
+        .reduce((s, r) => s + r.count, 0);
+
+      const score =
+        totalAssigned > 0 ? Math.round((count / totalAssigned) * 100) : 0;
+
+      return {
+        ...cat,
+        count,
+        score,
+      };
+    });
+
+    updated.sort((a, b) => b.count - a.count || a.id - b.id);
+
+    return updated.map((cat, idx) => ({ ...cat, position: idx + 1 }));
+  }
 
   const updateAnswerRowCategory = (id: number) => {
     if (selectedCategory === null) return;
@@ -104,28 +158,10 @@ export default function BoardCreator() {
       });
 
       // Recalculate category counts based on the sum of `count` on assigned answers
-      // and compute score as percentage of total assigned counts
-      setCategoryRows((prevCategoryRows) => {
-        const totalAssigned = nextRows.reduce(
-          (sum, r) => (r.category !== null ? sum + r.count : sum),
-          0,
-        );
-
-        return prevCategoryRows.map((category) => {
-          const count = nextRows
-            .filter((answer) => answer.category === category.id)
-            .reduce((sum, r) => sum + r.count, 0);
-
-          const score =
-            totalAssigned > 0 ? Math.round((count / totalAssigned) * 100) : 0;
-
-          return {
-            ...category,
-            count,
-            score,
-          };
-        });
-      });
+      // Recompute categories (counts, scores, and positions) from updated answers
+      setCategoryRows((prevCategoryRows) =>
+        recomputeCategories(prevCategoryRows, nextRows),
+      );
 
       return nextRows;
     });
@@ -133,6 +169,7 @@ export default function BoardCreator() {
 
   const CategoryRow = ({
     id,
+    position,
     answer,
     count,
     score,
@@ -143,12 +180,14 @@ export default function BoardCreator() {
       className={`table-row${isSelected ? " selected" : ""}`}
       onClick={() => setSelectedCategory(id)}
     >
-      <span>{id}</span>
+      <span>{position}</span>
 
       <input
         className="answer-column"
         value={answer}
         onChange={(e) => onAnswerChange(e.target.value)}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       />
 
       <span>{count}</span>
