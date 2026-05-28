@@ -72,6 +72,7 @@ export default function BoardCreator() {
         row.id === id ? { ...row, answer } : row,
       );
 
+      // Check if all rows are filled, if so add a new empty row
       const allFilled = nextRows.every((row) => row.answer.trim() !== "");
       if (allFilled) {
         return [
@@ -92,11 +93,42 @@ export default function BoardCreator() {
   const updateAnswerRowCategory = (id: number) => {
     if (selectedCategory === null) return;
 
-    setAnswerRows((prevRows) =>
-      prevRows.map((row) =>
-        row.id === id ? { ...row, category: selectedCategory } : row,
-      ),
-    );
+    setAnswerRows((prevRows) => {
+      const nextRows = prevRows.map((row) => {
+        if (row.id !== id) return row;
+
+        // Toggle: if the clicked answer already has the selected category, deselect it
+        const newCategory =
+          row.category === selectedCategory ? null : selectedCategory;
+        return { ...row, category: newCategory };
+      });
+
+      // Recalculate category counts based on the sum of `count` on assigned answers
+      // and compute score as percentage of total assigned counts
+      setCategoryRows((prevCategoryRows) => {
+        const totalAssigned = nextRows.reduce(
+          (sum, r) => (r.category !== null ? sum + r.count : sum),
+          0,
+        );
+
+        return prevCategoryRows.map((category) => {
+          const count = nextRows
+            .filter((answer) => answer.category === category.id)
+            .reduce((sum, r) => sum + r.count, 0);
+
+          const score =
+            totalAssigned > 0 ? Math.round((count / totalAssigned) * 100) : 0;
+
+          return {
+            ...category,
+            count,
+            score,
+          };
+        });
+      });
+
+      return nextRows;
+    });
   };
 
   const CategoryRow = ({
