@@ -11,11 +11,17 @@ type AnswerRow = {
   id: number;
   answer: string;
   count: number;
+  category: number | null;
 };
 
 type CategoryRowProps = CategoryRow & {
   onAnswerChange: (value: string) => void;
   isSelected: boolean;
+};
+
+type AnswerRowProps = AnswerRow & {
+  selectedCategory: number | null;
+  onAnswerRowClick: (id: number) => void;
 };
 
 const initialCategoryData: CategoryRow[] = [
@@ -27,16 +33,30 @@ const initialCategoryData: CategoryRow[] = [
   },
 ];
 
-const answerData: AnswerRow[] = [
+const initialAnswerData: AnswerRow[] = [
   {
     id: 1,
-    answer: "Mario Kart",
-    count: 9,
+    answer: "synth",
+    count: 10,
+    category: null,
   },
   {
-    id: 1,
-    answer: "Mario Kart",
-    count: 9,
+    id: 2,
+    answer: "synthesizer",
+    count: 5,
+    category: null,
+  },
+  {
+    id: 3,
+    answer: "sax",
+    count: 3,
+    category: null,
+  },
+  {
+    id: 4,
+    answer: "saxophone",
+    count: 2,
+    category: null,
   },
 ];
 
@@ -44,6 +64,7 @@ export default function BoardCreator() {
   const [categoryRows, setCategoryRows] =
     useState<CategoryRow[]>(initialCategoryData);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [answerRows, setAnswerRows] = useState<AnswerRow[]>(initialAnswerData);
 
   const updateCategoryAnswer = (id: number, answer: string) => {
     setCategoryRows((prevRows) => {
@@ -66,6 +87,16 @@ export default function BoardCreator() {
 
       return nextRows;
     });
+  };
+
+  const updateAnswerRowCategory = (id: number) => {
+    if (selectedCategory === null) return;
+
+    setAnswerRows((prevRows) =>
+      prevRows.map((row) =>
+        row.id === id ? { ...row, category: selectedCategory } : row,
+      ),
+    );
   };
 
   const CategoryRow = ({
@@ -91,6 +122,26 @@ export default function BoardCreator() {
       <span>{count}</span>
 
       <span>{score}</span>
+    </div>
+  );
+
+  const AnswerRow = ({
+    id,
+    answer,
+    count,
+    category,
+    selectedCategory,
+    onAnswerRowClick,
+  }: AnswerRowProps) => (
+    <div
+      className={`table-row${category === selectedCategory && selectedCategory !== null ? " selected" : ""}`}
+      onClick={() => onAnswerRowClick(id)}
+    >
+      <span>{id}</span>
+
+      <span className="answer-column">{answer}</span>
+
+      <span>{count}</span>
     </div>
   );
 
@@ -135,14 +186,13 @@ export default function BoardCreator() {
           </div>
 
           <div className="table-list">
-            {answerData.map((item) => (
-              <div key={item.id} className="table-row answers-row">
-                <span>{item.id}</span>
-
-                <span className="answer-column">{item.answer}</span>
-
-                <span>{item.count}</span>
-              </div>
+            {answerRows.map((item) => (
+              <AnswerRow
+                key={item.id}
+                selectedCategory={selectedCategory}
+                onAnswerRowClick={updateAnswerRowCategory}
+                {...item}
+              />
             ))}
           </div>
         </div>
