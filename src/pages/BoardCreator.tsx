@@ -1,45 +1,99 @@
+import { useState } from "react";
+
 type CategoryRow = {
-  position: number;
+  id: number;
   answer: string;
   count: number;
-  score: string;
+  score: number;
 };
 
 type AnswerRow = {
-  position: number;
+  id: number;
   answer: string;
   count: number;
 };
 
-const categoryData: CategoryRow[] = [
+type CategoryRowProps = CategoryRow & {
+  onAnswerChange: (value: string) => void;
+  isSelected: boolean;
+};
+
+const initialCategoryData: CategoryRow[] = [
   {
-    position: 1,
-    answer: "Nintendo",
-    count: 12,
-    score: "85%",
-  },
-  {
-    position: 1,
-    answer: "Nintendo",
-    count: 12,
-    score: "85%",
+    id: 1,
+    answer: "",
+    count: 0,
+    score: 0,
   },
 ];
 
 const answerData: AnswerRow[] = [
   {
-    position: 1,
+    id: 1,
     answer: "Mario Kart",
     count: 9,
   },
   {
-    position: 1,
+    id: 1,
     answer: "Mario Kart",
     count: 9,
   },
 ];
 
 export default function BoardCreator() {
+  const [categoryRows, setCategoryRows] =
+    useState<CategoryRow[]>(initialCategoryData);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+
+  const updateCategoryAnswer = (id: number, answer: string) => {
+    setCategoryRows((prevRows) => {
+      const nextRows = prevRows.map((row) =>
+        row.id === id ? { ...row, answer } : row,
+      );
+
+      const allFilled = nextRows.every((row) => row.answer.trim() !== "");
+      if (allFilled) {
+        return [
+          ...nextRows,
+          {
+            id: nextRows.length + 1,
+            answer: "",
+            count: 0,
+            score: 0,
+          },
+        ];
+      }
+
+      return nextRows;
+    });
+  };
+
+  const CategoryRow = ({
+    id,
+    answer,
+    count,
+    score,
+    onAnswerChange,
+    isSelected,
+  }: CategoryRowProps) => (
+    <div
+      className={`table-row${isSelected ? " selected" : ""}`}
+      onClick={() => setSelectedCategory(id)}
+    >
+      <span>{id}</span>
+
+      <input
+        className="answer-column"
+        value={answer}
+        onChange={(e) => onAnswerChange(e.target.value)}
+      />
+
+      <span>{count}</span>
+
+      <span>{score}</span>
+    </div>
+  );
+
   return (
     <div className="board-creator">
       <div className="question-selector">
@@ -62,16 +116,13 @@ export default function BoardCreator() {
           </div>
 
           <div className="table-list">
-            {categoryData.map((item) => (
-              <div key={item.position} className="table-row">
-                <span>{item.position}</span>
-
-                <span className="answer-column">{item.answer}</span>
-
-                <span>{item.count}</span>
-
-                <span>{item.score}</span>
-              </div>
+            {categoryRows.map((item) => (
+              <CategoryRow
+                key={item.id}
+                {...item}
+                isSelected={selectedCategory === item.id}
+                onAnswerChange={(value) => updateCategoryAnswer(item.id, value)}
+              />
             ))}
           </div>
         </div>
@@ -85,8 +136,8 @@ export default function BoardCreator() {
 
           <div className="table-list">
             {answerData.map((item) => (
-              <div key={item.position} className="table-row answers-row">
-                <span>{item.position}</span>
+              <div key={item.id} className="table-row answers-row">
+                <span>{item.id}</span>
 
                 <span className="answer-column">{item.answer}</span>
 
