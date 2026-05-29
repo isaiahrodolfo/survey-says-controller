@@ -1,9 +1,47 @@
 import { supabase } from "../utils/supabase";
 
+export type Answer = {
+  id: number;
+  user_id: number;
+  question_id: number;
+  answer_text: string;
+};
+
+export type Question = {
+  id: number;
+  question: string;
+};
+
+export const fetchAnswers = async (): Promise<Answer[]> => {
+  const { data, error } = await supabase
+    .from("answers")
+    .select("id, user_id, question_id, answer_text");
+
+  if (error) {
+    console.error("Error fetching answers:", error);
+    throw error;
+  }
+
+  return data as Answer[];
+};
+
+export const fetchQuestions = async (): Promise<Question[]> => {
+  const { data, error } = await supabase
+    .from("questions")
+    .select("id, question");
+
+  if (error) {
+    console.error("Error fetching questions:", error);
+    throw error;
+  }
+
+  return data as Question[];
+};
+
 /**
  * TODO:
  *
- * - [ ] remove extra (empty rows) from the board creator UI
+ * - [x] Remove extra (empty) rows from the board controller UI
  *
  * - [ ] FETCH survey answers
  * - [ ] WRITE board when game is started

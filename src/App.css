@@ -198,3 +198,7 @@ body {
 .start-game-button:hover {
   background: #98999c;
 }
+
+.hidden {
+  display: none;
+}

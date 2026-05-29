@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CategoryRow } from "../components/CategoryRow";
 import { AnswerRow } from "../components/AnswerRow";
+import { fetchAnswers, fetchQuestions } from "../services/api";
+import type { Answer, Question } from "../services/api";
 
-export type BoardCreatorQuestion = {
+export type BoardCreatorData = {
   id: number;
   question: string;
   answers: BoardCreatorAnswer[];
@@ -25,69 +27,6 @@ type BoardCreatorAnswer = {
   category: number | null;
 };
 
-const initialQuestions: BoardCreatorQuestion[] = [
-  {
-    id: 1,
-    question: "What instrument do you want to see?",
-    answers: [
-      {
-        id: 1,
-        answer: "synth",
-        count: 10,
-        category: null,
-      },
-      {
-        id: 2,
-        answer: "synthesizer",
-        count: 5,
-        category: null,
-      },
-      {
-        id: 3,
-        answer: "sax",
-        count: 3,
-        category: null,
-      },
-      {
-        id: 4,
-        answer: "saxophone",
-        count: 2,
-        category: null,
-      },
-    ],
-  },
-  {
-    id: 2,
-    question: "Where do you want to go next?",
-    answers: [
-      {
-        id: 1,
-        answer: "hiking",
-        count: 12,
-        category: null,
-      },
-      {
-        id: 2,
-        answer: "trail",
-        count: 8,
-        category: null,
-      },
-      {
-        id: 3,
-        answer: "bowling",
-        count: 6,
-        category: null,
-      },
-      {
-        id: 4,
-        answer: "camping",
-        count: 15,
-        category: null,
-      },
-    ],
-  },
-];
-
 function createInitialCategory(): BoardCreatorCategory {
   return {
     id: 1,
@@ -98,20 +37,68 @@ function createInitialCategory(): BoardCreatorCategory {
   };
 }
 
-export default function BoardCreator() {
-  const [questions, setQuestions] = useState<BoardCreatorQuestion[]>(
-    // Add an initial category to each question if not present
-    initialQuestions.map((question) => ({
-      ...question,
-      categories: question.categories ?? [createInitialCategory()],
-    })),
+const addAnswersToData = (
+  answers: Answer[],
+  questions: Question[],
+): BoardCreatorData[] => {
+  const questionMap = new Map<number, Map<string, number>>();
+
+  for (const answer of answers) {
+    // Create an empty map for the question if it doesn't exist
+    if (!questionMap.has(answer.question_id)) {
+      questionMap.set(answer.question_id, new Map());
+    }
+
+    const answerCounts = questionMap.get(answer.question_id)!;
+
+    // Increment the count for this answer text
+    answerCounts.set(
+      answer.answer_text,
+      (answerCounts.get(answer.answer_text) ?? 0) + 1,
+    );
+  }
+
+  return Array.from(questionMap.entries()).map(
+    ([questionId, answerCounts]) => ({
+      id: questionId,
+      question: questions.find((q) => q.id === questionId)?.question || "", // fill this if you have question text elsewhere
+      categories: [createInitialCategory()],
+      answers: Array.from(answerCounts.entries()).map(
+        ([answerText, count], index) => ({
+          id: index + 1,
+          answer: answerText,
+          count,
+          category: null,
+        }),
+      ),
+    }),
   );
+};
+
+export default function BoardCreator() {
+  const [data, setData] = useState<BoardCreatorData[]>();
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load questions from the API on component mount
+  useEffect(() => {
+    async function loadQuestions() {
+      const answers: Answer[] = await fetchAnswers();
+      const questions: Question[] = await fetchQuestions();
+
+      setData(addAnswersToData(answers, questions));
+      setIsLoading(false);
+    }
+
+    loadQuestions();
+  }, []);
+
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
-  const currentQuestion = questions[selectedQuestionIndex] ?? questions[0];
-  const answerRows = currentQuestion.answers;
-  const categoryRows = currentQuestion.categories ?? [];
+  const currentQuestion = data?.[selectedQuestionIndex];
+
+  const answerRows = currentQuestion?.answers;
+  const categoryRows = currentQuestion?.categories ?? [];
 
   const navigate = useNavigate();
 
@@ -121,9 +108,9 @@ export default function BoardCreator() {
   };
 
   const updateCategoryName = (id: number, category: string) => {
-    setQuestions((prevQuestions) =>
-      prevQuestions.map((question) => {
-        if (question.id !== currentQuestion.id) {
+    setData((prevData) =>
+      prevData?.map((question) => {
+        if (question.id !== currentQuestion?.id) {
           return question;
         }
 
@@ -193,9 +180,9 @@ export default function BoardCreator() {
   const updateAnswerRowCategory = (id: number) => {
     if (selectedCategory === null) return;
 
-    setQuestions((prevQuestions) =>
-      prevQuestions.map((question) => {
-        if (question.id !== currentQuestion.id) {
+    setData((prevData) =>
+      prevData?.map((question) => {
+        if (question.id !== currentQuestion?.id) {
           return question;
         }
 
@@ -226,7 +213,7 @@ export default function BoardCreator() {
     navigate("/controller", {
       state: {
         // Send over the questions variable without the answers
-        questions: questions.map((q) => ({
+        questions: data?.map((q) => ({
           id: q.id,
           question: q.question,
           categories: q.categories,
@@ -234,6 +221,11 @@ export default function BoardCreator() {
       },
     });
   };
+
+  // Loading screen while we fetch questions from the API
+  if (!currentQuestion || isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="board-creator">
@@ -253,7 +245,7 @@ export default function BoardCreator() {
           className="arrow-button"
           onClick={() =>
             handleQuestionChange(
-              Math.min(selectedQuestionIndex + 1, questions.length - 1),
+              Math.min(selectedQuestionIndex + 1, data.length - 1),
             )
           }
         >
@@ -293,7 +285,7 @@ export default function BoardCreator() {
           </div>
 
           <div className="table-list">
-            {answerRows.map((item) => (
+            {answerRows?.map((item) => (
               <AnswerRow
                 key={item.id}
                 selectedCategory={selectedCategory}
@@ -305,7 +297,11 @@ export default function BoardCreator() {
         </div>
       </div>
 
-      <button className="start-game-button" onClick={handleStartGame}>
+      <button
+        // Show start game button only on the last question
+        className={`start-game-button ${selectedQuestionIndex === data.length - 1 ? "" : "hidden"}`}
+        onClick={handleStartGame}
+      >
         Start Game
       </button>
     </div>
