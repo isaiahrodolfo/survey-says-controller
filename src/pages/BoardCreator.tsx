@@ -1,30 +1,31 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { CategoryRow } from "../components/CategoryRow";
 import { AnswerRow } from "../components/AnswerRow";
 
-type CategoryRow = {
+export type BoardCreatorQuestion = {
   id: number;
-  answer: string;
+  question: string;
+  answers: BoardCreatorAnswer[];
+  categories?: BoardCreatorCategory[];
+};
+
+export type BoardCreatorCategory = {
+  id: number;
+  category: string;
   count: number;
   score: number;
   position: number;
 };
 
-type AnswerRow = {
+type BoardCreatorAnswer = {
   id: number;
   answer: string;
   count: number;
   category: number | null;
 };
 
-type QuestionGroup = {
-  id: number;
-  question: string;
-  answers: AnswerRow[];
-  categories?: CategoryRow[];
-};
-
-const initialQuestions: QuestionGroup[] = [
+const initialQuestions: BoardCreatorQuestion[] = [
   {
     id: 1,
     question: "What instrument do you want to see?",
@@ -87,10 +88,10 @@ const initialQuestions: QuestionGroup[] = [
   },
 ];
 
-function createInitialCategory(): CategoryRow {
+function createInitialCategory(): BoardCreatorCategory {
   return {
     id: 1,
-    answer: "",
+    category: "",
     count: 0,
     score: 0,
     position: 1,
@@ -98,7 +99,7 @@ function createInitialCategory(): CategoryRow {
 }
 
 export default function BoardCreator() {
-  const [questions, setQuestions] = useState<QuestionGroup[]>(
+  const [questions, setQuestions] = useState<BoardCreatorQuestion[]>(
     // Add an initial category to each question if not present
     initialQuestions.map((question) => ({
       ...question,
@@ -112,12 +113,14 @@ export default function BoardCreator() {
   const answerRows = currentQuestion.answers;
   const categoryRows = currentQuestion.categories ?? [];
 
+  const navigate = useNavigate();
+
   const handleQuestionChange = (newIndex: number) => {
     setSelectedQuestionIndex(newIndex);
     setSelectedCategory(null);
   };
 
-  const updateCategoryAnswer = (id: number, answer: string) => {
+  const updateCategoryName = (id: number, category: string) => {
     setQuestions((prevQuestions) =>
       prevQuestions.map((question) => {
         if (question.id !== currentQuestion.id) {
@@ -127,12 +130,12 @@ export default function BoardCreator() {
         const categories = question.categories ?? [];
 
         const nextCategories = categories.map((row) =>
-          row.id === id ? { ...row, answer } : row,
+          row.id === id ? { ...row, category } : row,
         );
 
         // Check if all categories are filled to decide if we should add a new one
         const allFilled = nextCategories.every(
-          (row) => row.answer.trim() !== "",
+          (row) => row.category.trim() !== "",
         );
 
         let withAdded = nextCategories;
@@ -142,7 +145,7 @@ export default function BoardCreator() {
             ...nextCategories,
             {
               id: nextCategories.length + 1,
-              answer: "",
+              category: "",
               count: 0,
               score: 0,
               position: nextCategories.length + 1,
@@ -159,8 +162,8 @@ export default function BoardCreator() {
   };
 
   function recomputeCategories(
-    categories: CategoryRow[],
-    answers: AnswerRow[],
+    categories: BoardCreatorCategory[],
+    answers: BoardCreatorAnswer[],
   ) {
     const totalAssigned = answers.reduce(
       (sum, r) => (r.category !== null ? sum + r.count : sum),
@@ -218,6 +221,20 @@ export default function BoardCreator() {
     );
   };
 
+  const handleStartGame = () => {
+    // TODO add checks to make sure no empty fields or empty questions before starting the game
+    navigate("/controller", {
+      state: {
+        // Send over the questions variable without the answers
+        questions: questions.map((q) => ({
+          id: q.id,
+          question: q.question,
+          categories: q.categories,
+        })),
+      },
+    });
+  };
+
   return (
     <div className="board-creator">
       <div className="question-selector">
@@ -260,7 +277,7 @@ export default function BoardCreator() {
               <CategoryRow
                 key={item.id}
                 isSelected={selectedCategory === item.id}
-                onAnswerChange={(value) => updateCategoryAnswer(item.id, value)}
+                onCategoryChange={(value) => updateCategoryName(item.id, value)}
                 onSelect={setSelectedCategory}
                 {...item}
               />
@@ -288,7 +305,9 @@ export default function BoardCreator() {
         </div>
       </div>
 
-      <button className="start-game-button">Start Game</button>
+      <button className="start-game-button" onClick={handleStartGame}>
+        Start Game
+      </button>
     </div>
   );
 }

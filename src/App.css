@@ -35,6 +35,16 @@ body {
   padding: 64px 48px;
 }
 
+.controller {
+  width: 100%;
+  max-width: 600px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 144px, 48px;
+}
+
 /* QUESTION SELECTOR */
 
 .question-selector {

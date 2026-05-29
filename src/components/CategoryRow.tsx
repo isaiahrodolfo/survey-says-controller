@@ -1,10 +1,10 @@
 type CategoryRowProps = {
   id: number;
-  answer: string;
+  category: string;
   count: number;
   score: number;
   position: number;
-  onAnswerChange: (value: string) => void;
+  onCategoryChange: (value: string) => void;
   onSelect: (id: number) => void;
   isSelected: boolean;
 };
@@ -12,10 +12,10 @@ type CategoryRowProps = {
 export const CategoryRow = ({
   id,
   position,
-  answer,
+  category,
   count,
   score,
-  onAnswerChange,
+  onCategoryChange,
   onSelect,
   isSelected,
 }: CategoryRowProps) => (
@@ -27,9 +27,9 @@ export const CategoryRow = ({
 
     <input
       className="answer-column"
-      value={answer}
+      value={category}
       onChange={(e) => {
-        onAnswerChange(e.target.value);
+        onCategoryChange(e.target.value);
       }}
     />
 
