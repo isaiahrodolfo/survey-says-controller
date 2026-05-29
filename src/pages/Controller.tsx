@@ -65,6 +65,10 @@ export default function Controller() {
     );
   }
 
+  function handleQuestionChange(newIndex: number) {
+    setSelectedQuestionIndex(newIndex);
+  }
+
   // const controllerCategoryRows = [
   //   {
   //     id: 1,
@@ -88,6 +92,30 @@ export default function Controller() {
 
   return (
     <div className="controller">
+      <div className="question-selector">
+        <button
+          className="arrow-button"
+          onClick={() =>
+            handleQuestionChange(Math.max(selectedQuestionIndex - 1, 0))
+          }
+        >
+          ←
+        </button>
+
+        <h2 className="question-number">Question #{currentQuestion.id}</h2>
+
+        <button
+          className="arrow-button"
+          onClick={() =>
+            handleQuestionChange(
+              Math.min(selectedQuestionIndex + 1, questions.length - 1),
+            )
+          }
+        >
+          →
+        </button>
+      </div>
+
       <div className="table-container">
         <div className="table-header answers-header">
           <span>position</span>
