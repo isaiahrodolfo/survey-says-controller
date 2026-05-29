@@ -27,12 +27,15 @@ export default function Controller() {
     // Add a isHidden field to each category
     location.state?.questions.map((question: BoardCreatorQuestion) => ({
       ...question,
-      categories: question.categories?.map(
-        (category: BoardCreatorCategory) => ({
+      categories: question.categories
+        // Filter out empty categories (those with an empty string as the category name)
+        ?.filter(
+          (category: BoardCreatorCategory) => category.category.trim() !== "",
+        )
+        .map((category: BoardCreatorCategory) => ({
           ...category,
           isHidden: true,
-        }),
-      ),
+        })),
     })) || [],
   );
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
