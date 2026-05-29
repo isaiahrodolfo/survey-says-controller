@@ -39,7 +39,31 @@ export default function Controller() {
   const currentQuestion = questions[selectedQuestionIndex] ?? questions[0];
   const controllerCategories = currentQuestion.categories ?? [];
 
-  function handleToggleIsHidden(id: number, isHidden: boolean) {}
+  function handleToggleIsHidden(id: number, isHidden: boolean) {
+    setQuestions((prevQuestions) =>
+      prevQuestions.map((question) => {
+        if (question.id !== currentQuestion.id) {
+          return question;
+        }
+
+        const categories = question.categories?.map((category) => {
+          if (category.id !== id) {
+            return category;
+          }
+
+          return {
+            ...category,
+            isHidden: !isHidden, // Toggle the isHidden value
+          };
+        });
+
+        return {
+          ...question,
+          categories,
+        };
+      }),
+    );
+  }
 
   // const controllerCategoryRows = [
   //   {
@@ -68,7 +92,7 @@ export default function Controller() {
         <div className="table-header answers-header">
           <span>position</span>
           <span>answer</span>
-          <span>count</span>
+          <span>shown/hidden</span>
         </div>
 
         <div className="table-list">
