@@ -97,14 +97,13 @@ export const toggleShownHidden = async (
  *
  * - [x] Remove extra (empty) rows from the board controller UI
  *
- * - [ ] FETCH survey answers
- * - [ ] WRITE board when game is started
- *   - [ ] remember to add checks: write to supabase, then move forward with navigation if successful, otherwise show error message
+ * - [x] FETCH survey answers
+ * - [x] WRITE board when game is started
  * - [ ] add loading states for fetch/write
  * - [ ] add error handling for fetch/write
  * - [ ] add types for survey answers and board
  *
- * - [ ] POST shown/hidden state of each answer for each question
+ * - [x] POST shown/hidden state of each answer for each question
  *
  *
  * - [ ] start the board screen code. it must listen for changes and update the board in real time as the controller changes the shown/hidden state of each answer

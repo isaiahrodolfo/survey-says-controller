@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { ControllerCategoryRow } from "../components/ControllerCategoryRow";
-import type { BoardCreatorCategory, BoardCreatorData } from "./BoardCreator";
-import { toggleShownHidden } from "../services/api";
+// import type { BoardCreatorCategory, BoardCreatorData } from "./BoardCreator";
+import { fetchQuestions, toggleShownHidden } from "../services/api";
+import { supabase } from "../utils/supabase";
 
 type ControllerCategoryRow = {
   id: number;
@@ -21,50 +22,83 @@ type ControllerQuestion = {
 
 export default function Controller() {
   const location = useLocation();
-  const [questions, setQuestions] = useState<ControllerQuestion[]>(
-    // Add a isHidden field to each category
-    location.state?.data.map((question: BoardCreatorData) => ({
-      ...question,
-      categories: question.categories?.map(
-        (category: BoardCreatorCategory) => ({
-          ...category,
-          isHidden: true,
-        }),
-      ),
-    })) || [],
-  );
-  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
-  const currentQuestion = questions[selectedQuestionIndex] ?? questions[0];
-  const controllerCategories = currentQuestion.categories ?? [];
 
-  function handleToggleIsHidden(id: number, isHidden: boolean) {
-    setQuestions((prevQuestions) =>
-      prevQuestions.map((question) => {
-        if (question.id !== currentQuestion.id) {
-          return question;
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
+  const [questions, setQuestions] = useState<ControllerQuestion[]>([]);
+
+  const currentQuestion = questions[selectedQuestionIndex];
+
+  const controllerCategories = currentQuestion?.categories ?? [];
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        let baseQuestions: ControllerQuestion[] = [];
+
+        // 1. Use navigation state if available
+        if (location.state?.data) {
+          baseQuestions = location.state.data;
+        } else {
+          baseQuestions = await fetchQuestions();
         }
 
-        const categories = question.categories?.map((category) => {
-          if (category.id !== id) {
-            return category;
-          }
+        // 2. Enrich each question with categories
+        const enriched = await Promise.all(
+          baseQuestions.map(async (question) => {
+            const { data, error } = await supabase
+              .from("board_state")
+              .select("*")
+              .eq("question_id", question.id)
+              .order("count", { ascending: false });
 
-          // Update the isHidden value on the backend
-          toggleShownHidden(question.id, category.category, isHidden).catch(
-            (error) => {
-              console.error("Error toggling shown/hidden:", error);
-            },
-          );
+            if (error) throw error;
+
+            const categories: ControllerCategoryRow[] = (data ?? []).map(
+              (row, index) => ({
+                id: row.id,
+                category: row.category,
+                count: row.count,
+                score: 0,
+                position: index + 1,
+                isHidden: row.is_hidden,
+              }),
+            );
+
+            return {
+              ...question,
+              categories,
+            };
+          }),
+        );
+
+        setQuestions(enriched);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+      }
+    };
+
+    load();
+  }, [location.state]); // ✅ only depend on this
+
+  function handleToggleIsHidden(id: number, isHidden: boolean) {
+    setQuestions((prev) =>
+      prev.map((q) => {
+        if (q.id !== currentQuestion?.id) return q;
+
+        const updatedCategories = q.categories?.map((cat) => {
+          if (cat.id !== id) return cat;
+
+          toggleShownHidden(q.id, cat.category, !isHidden).catch(console.error);
 
           return {
-            ...category,
-            isHidden: !isHidden, // Toggle the isHidden value
+            ...cat,
+            isHidden: !isHidden,
           };
         });
 
         return {
-          ...question,
-          categories,
+          ...q,
+          categories: updatedCategories,
         };
       }),
     );
@@ -74,26 +108,9 @@ export default function Controller() {
     setSelectedQuestionIndex(newIndex);
   }
 
-  // const controllerCategoryRows = [
-  //   {
-  //     id: 1,
-  //     category: "Category 1",
-  //     isHidden: false,
-  //     position: 1,
-  //   },
-  //   {
-  //     id: 2,
-  //     category: "Category 2",
-  //     isHidden: true,
-  //     position: 2,
-  //   },
-  //   {
-  //     id: 3,
-  //     category: "Category 3",
-  //     isHidden: false,
-  //     position: null,
-  //   },
-  // ];
+  if (!currentQuestion) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="controller">
