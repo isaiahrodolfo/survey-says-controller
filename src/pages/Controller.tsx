@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { ControllerCategoryRow } from "../components/ControllerCategoryRow";
-import type {
-  BoardCreatorCategory,
-  BoardCreatorQuestion,
-} from "./BoardCreator";
+import type { BoardCreatorCategory, BoardCreatorData } from "./BoardCreator";
 
 type ControllerCategoryRow = {
   id: number;
@@ -25,17 +22,14 @@ export default function Controller() {
   const location = useLocation();
   const [questions, setQuestions] = useState<ControllerQuestion[]>(
     // Add a isHidden field to each category
-    location.state?.questions.map((question: BoardCreatorQuestion) => ({
+    location.state?.data.map((question: BoardCreatorData) => ({
       ...question,
-      categories: question.categories
-        // Filter out empty categories (those with an empty string as the category name)
-        ?.filter(
-          (category: BoardCreatorCategory) => category.category.trim() !== "",
-        )
-        .map((category: BoardCreatorCategory) => ({
+      categories: question.categories?.map(
+        (category: BoardCreatorCategory) => ({
           ...category,
           isHidden: true,
-        })),
+        }),
+      ),
     })) || [],
   );
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);

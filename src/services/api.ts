@@ -12,6 +12,13 @@ export type Question = {
   question: string;
 };
 
+export type BoardStateRow = {
+  question_id: number;
+  count: number;
+  category: string;
+  is_hidden?: boolean; // TODO: when we fetch from the backend, this can be true or false on startup
+};
+
 export const fetchAnswers = async (): Promise<Answer[]> => {
   const { data, error } = await supabase
     .from("answers")
@@ -36,6 +43,35 @@ export const fetchQuestions = async (): Promise<Question[]> => {
   }
 
   return data as Question[];
+};
+
+export const writeBoardState = async (
+  boardState: BoardStateRow[],
+): Promise<void> => {
+  // delete existing board state. TODO: update board state instead of deleting and re-inserting
+  const { error: deleteError } = await supabase
+    .from("board_state")
+    .delete()
+    .neq("id", 0); // delete all rows (but supabase doesn't allow .delete() without a filter, so we add a filter that is always true)
+  if (deleteError) {
+    throw deleteError;
+  }
+
+  const { error } = await supabase.from("board_state").insert(
+    boardState.map((row) => ({
+      question_id: row.question_id,
+      category: row.category,
+      count: row.count,
+      is_hidden: row.is_hidden ?? true, // default to true if is_hidden is undefined
+    })),
+  );
+
+  if (error) {
+    console.error("Error writing board state:", error);
+    throw error;
+  }
+
+  return;
 };
 
 /**

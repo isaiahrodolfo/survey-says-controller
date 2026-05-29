@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CategoryRow } from "../components/CategoryRow";
 import { AnswerRow } from "../components/AnswerRow";
-import { fetchAnswers, fetchQuestions } from "../services/api";
+import { fetchAnswers, fetchQuestions, writeBoardState } from "../services/api";
 import type { Answer, Question } from "../services/api";
 
 export type BoardCreatorData = {
@@ -208,16 +208,38 @@ export default function BoardCreator() {
     );
   };
 
-  const handleStartGame = () => {
+  const handleStartGame = async () => {
     // TODO add checks to make sure no empty fields or empty questions before starting the game
+
+    // Send over the data variable without the answers
+    const controllerData = data?.map((q) => ({
+      id: q.id,
+      question: q.question,
+      categories: q.categories?.filter((c) => c.category.trim() !== ""),
+    }));
+
+    console.log("Controller data to be sent to backend:", controllerData);
+
+    // Do not start the game if there are no categories or questions
+    if (!controllerData) return;
+
+    // Send the data to the backend here, then navigate to the controller page with the data as state
+    await writeBoardState(
+      controllerData
+        .map(
+          (q) =>
+            q.categories?.map((c) => ({
+              question_id: q.id,
+              category: c.category,
+              count: c.count,
+            })) || [],
+        )
+        .flat(),
+    );
+
     navigate("/controller", {
       state: {
-        // Send over the questions variable without the answers
-        questions: data?.map((q) => ({
-          id: q.id,
-          question: q.question,
-          categories: q.categories,
-        })),
+        data: controllerData,
       },
     });
   };
