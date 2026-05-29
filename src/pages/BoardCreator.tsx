@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CategoryRow } from "../components/CategoryRow";
+import { AnswerRow } from "../components/AnswerRow";
 
 type CategoryRow = {
   id: number;
@@ -22,21 +23,6 @@ type QuestionGroup = {
   answers: AnswerRow[];
   categories?: CategoryRow[];
 };
-
-type AnswerRowProps = AnswerRow & {
-  selectedCategory: number | null;
-  onAnswerRowClick: (id: number) => void;
-};
-
-// const initialCategoryData: CategoryRow[] = [
-//   {
-//     id: 1,
-//     answer: "",
-//     count: 0,
-//     score: 0,
-//     position: 1,
-//   },
-// ];
 
 const initialQuestions: QuestionGroup[] = [
   {
@@ -113,6 +99,7 @@ function createInitialCategory(): CategoryRow {
 
 export default function BoardCreator() {
   const [questions, setQuestions] = useState<QuestionGroup[]>(
+    // Add an initial category to each question if not present
     initialQuestions.map((question) => ({
       ...question,
       categories: question.categories ?? [createInitialCategory()],
@@ -143,6 +130,7 @@ export default function BoardCreator() {
           row.id === id ? { ...row, answer } : row,
         );
 
+        // Check if all categories are filled to decide if we should add a new one
         const allFilled = nextCategories.every(
           (row) => row.answer.trim() !== "",
         );
@@ -164,7 +152,7 @@ export default function BoardCreator() {
 
         return {
           ...question,
-          categories: recomputeCategories(withAdded, question.answers),
+          categories: withAdded,
         };
       }),
     );
@@ -230,26 +218,6 @@ export default function BoardCreator() {
     );
   };
 
-  const AnswerRow = ({
-    id,
-    answer,
-    count,
-    category,
-    selectedCategory,
-    onAnswerRowClick,
-  }: AnswerRowProps) => (
-    <div
-      className={`table-row${category === selectedCategory && selectedCategory !== null ? " selected" : ""} answers-row`}
-      onClick={() => onAnswerRowClick(id)}
-    >
-      <span>{`${category ?? "X"}`}</span>
-
-      <span className="answer-column">{answer}</span>
-
-      <span>{count}</span>
-    </div>
-  );
-
   return (
     <div className="board-creator">
       <div className="question-selector">
@@ -291,10 +259,10 @@ export default function BoardCreator() {
             {categoryRows.map((item) => (
               <CategoryRow
                 key={item.id}
-                {...item}
                 isSelected={selectedCategory === item.id}
                 onAnswerChange={(value) => updateCategoryAnswer(item.id, value)}
                 onSelect={setSelectedCategory}
+                {...item}
               />
             ))}
           </div>
