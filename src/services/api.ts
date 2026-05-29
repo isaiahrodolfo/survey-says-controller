@@ -74,6 +74,24 @@ export const writeBoardState = async (
   return;
 };
 
+export const toggleShownHidden = async (
+  question_id: number,
+  category: string,
+  is_hidden: boolean,
+): Promise<void> => {
+  // Update the is_hidden value for the specific question and category
+  const { error } = await supabase
+    .from("board_state")
+    .update({ is_hidden: !is_hidden })
+    .eq("question_id", question_id)
+    .eq("category", category);
+
+  if (error) {
+    console.error("Error toggling shown/hidden state:", error);
+    throw error;
+  }
+};
+
 /**
  * TODO:
  *

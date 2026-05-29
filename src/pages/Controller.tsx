@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { ControllerCategoryRow } from "../components/ControllerCategoryRow";
 import type { BoardCreatorCategory, BoardCreatorData } from "./BoardCreator";
+import { toggleShownHidden } from "../services/api";
 
 type ControllerCategoryRow = {
   id: number;
@@ -47,6 +48,13 @@ export default function Controller() {
           if (category.id !== id) {
             return category;
           }
+
+          // Update the isHidden value on the backend
+          toggleShownHidden(question.id, category.category, isHidden).catch(
+            (error) => {
+              console.error("Error toggling shown/hidden:", error);
+            },
+          );
 
           return {
             ...category,
