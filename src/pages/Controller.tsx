@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { ControllerCategoryRow } from "../components/ControllerCategoryRow";
 // import type { BoardCreatorCategory, BoardCreatorData } from "./BoardCreator";
-import { fetchQuestions, toggleShownHidden } from "../services/api";
+import {
+  fetchQuestions,
+  toggleShownHidden,
+  writeCurrentQuestion,
+} from "../services/api";
 import { supabase } from "../utils/supabase";
 
 type ControllerCategoryRow = {
@@ -78,7 +82,7 @@ export default function Controller() {
     };
 
     load();
-  }, [location.state]); // ✅ only depend on this
+  }, [location.state]);
 
   function handleToggleIsHidden(id: number, isHidden: boolean) {
     setQuestions((prev) =>
@@ -105,6 +109,7 @@ export default function Controller() {
   }
 
   function handleQuestionChange(newIndex: number) {
+    writeCurrentQuestion(newIndex + 1).catch(console.error); // +1 because question IDs are 1-indexed
     setSelectedQuestionIndex(newIndex);
   }
 

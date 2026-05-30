@@ -92,6 +92,21 @@ export const toggleShownHidden = async (
   }
 };
 
+export const writeCurrentQuestion = async (
+  question_id: number,
+): Promise<void> => {
+  // Update the current_question_id in the game_state table
+  const { error } = await supabase
+    .from("current_question")
+    .update({ current_question_id: question_id })
+    .eq("id", 1); // assuming there's only one row in game_state with id = 1
+
+  if (error) {
+    console.error("Error setting current question:", error);
+    throw error;
+  }
+};
+
 /**
  * TODO:
  *
