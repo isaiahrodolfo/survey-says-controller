@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 type ControllerCategoryRowProps = {
   id: number;
   category: string;
@@ -9,18 +11,25 @@ type ControllerCategoryRowProps = {
 export const ControllerCategoryRow = ({
   id,
   category,
-  isHidden,
+  isHidden: initialIsHidden,
   position,
   onClick,
-}: ControllerCategoryRowProps) => (
-  <div
-    className={`table-row answers-row`}
-    onClick={() => onClick(id, isHidden)}
-  >
-    <span>{position}</span>
+}: ControllerCategoryRowProps) => {
+  const [isHidden, setIsHidden] = useState(initialIsHidden);
 
-    <span className="answer-column">{category}</span>
+  const handleClick = () => {
+    const next = !isHidden;
+    setIsHidden(next);
+    onClick(id, next);
+  };
 
-    <span>{`${isHidden ? "X" : "O"}`}</span>
-  </div>
-);
+  return (
+    <div className="table-row answers-row" onClick={handleClick}>
+      <span>{position}</span>
+
+      <span className="answer-column">{category}</span>
+
+      <span>{isHidden ? "X" : "O"}</span>
+    </div>
+  );
+};
