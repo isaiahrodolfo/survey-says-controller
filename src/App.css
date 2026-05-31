@@ -179,9 +179,9 @@ body {
   gap: 18px;
 }
 
-/* START BUTTON */
+/* BUTTON */
 
-.start-game-button {
+.button {
   border: none;
   background: #b1b2b5;
 
@@ -195,7 +195,7 @@ body {
   transition: background 0.2s ease;
 }
 
-.start-game-button:hover {
+.button:hover {
   background: #98999c;
 }
 

@@ -74,6 +74,40 @@ export const writeBoardState = async (
   return;
 };
 
+export const updateBoardStateQuestionCategories = async (
+  question_id: number,
+  categories: BoardStateRow[],
+): Promise<void> => {
+  // delete existing categories for this question
+  const { error: deleteError } = await supabase
+    .from("board_state")
+    .delete()
+    .eq("question_id", question_id);
+
+  if (deleteError) {
+    console.error(
+      "Error deleting existing board state categories:",
+      deleteError,
+    );
+    throw deleteError;
+  }
+
+  // insert new categories for this question with count = 0 and is_hidden = true
+  const { error } = await supabase.from("board_state").insert(
+    categories.map((category) => ({
+      question_id,
+      category,
+      count: category.count,
+      is_hidden: true,
+    })),
+  );
+
+  if (error) {
+    console.error("Error inserting new board state categories:", error);
+    throw error;
+  }
+};
+
 export const toggleShownHidden = async (
   question_id: number,
   category: string,

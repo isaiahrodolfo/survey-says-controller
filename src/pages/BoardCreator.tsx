@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CategoryRow } from "../components/CategoryRow";
 import { AnswerRow } from "../components/AnswerRow";
-import { fetchAnswers, fetchQuestions, writeBoardState } from "../services/api";
+import {
+  fetchAnswers,
+  fetchQuestions,
+  updateBoardStateQuestionCategories,
+  writeBoardState,
+} from "../services/api";
 import type { Answer, Question } from "../services/api";
 
 export type BoardCreatorData = {
@@ -208,7 +213,32 @@ export default function BoardCreator() {
     );
   };
 
-  const handleStartGame = async () => {
+  const handleSaveQuestion = async () => {
+    if (!currentQuestion) return;
+
+    // Save the current question to the backend here
+    await updateBoardStateQuestionCategories(
+      currentQuestion.id,
+      data!
+        .filter((q) => q.id === currentQuestion.id)
+        .flatMap(
+          (q) =>
+            q.categories
+              ?.filter((c) => c.category.trim() !== "")
+              .map((c) => ({
+                question_id: q.id,
+                category: c.category,
+                count: c.count,
+              })) ?? [],
+        ),
+    );
+  };
+
+  const handleStartGameFromThisQuestion = async () => {
+    // Add checks to make sure no empty fields or empty questions before starting the game
+  };
+
+  const handleSaveAllQuestionsAndStartGame = async () => {
     // TODO add checks to make sure no empty fields or empty questions before starting the game
 
     // Send over the data variable without the answers
@@ -321,10 +351,25 @@ export default function BoardCreator() {
 
       <button
         // Show start game button only on the last question
-        className={`start-game-button ${selectedQuestionIndex === data.length - 1 ? "" : "hidden"}`}
-        onClick={handleStartGame}
+        className="button"
+        onClick={handleSaveQuestion}
       >
-        Start Game
+        Save Question
+      </button>
+      <button
+        // Show start game button only on the last question
+        className="button"
+        onClick={handleStartGameFromThisQuestion}
+      >
+        Start Game from This Question
+      </button>
+      <button
+        // Show start game button only on the last question
+        // This saves all questions and starts the game
+        className={`button ${selectedQuestionIndex === data.length - 1 ? "" : "hidden"}`}
+        onClick={handleSaveAllQuestionsAndStartGame}
+      >
+        Save All Questions & Start Game
       </button>
     </div>
   );
