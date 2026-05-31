@@ -252,7 +252,7 @@ export default function BoardCreator() {
   };
 
   const handleSaveAllQuestionsAndStartGame = async () => {
-    // TODO add checks to make sure no empty fields or empty questions before starting the game
+    if (!data || !currentQuestion) return;
 
     // Send over the data variable without the answers
     const controllerData = data?.map((q) => ({
@@ -279,6 +279,8 @@ export default function BoardCreator() {
         )
         .flat(),
     );
+
+    writeCurrentQuestion(1).catch(console.error);
 
     navigate("/controller", {
       state: {
