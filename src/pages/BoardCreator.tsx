@@ -240,7 +240,7 @@ export default function BoardCreator() {
 
     handleSaveQuestion();
 
-    writeCurrentQuestion(currentQuestion.id).catch(console.error);
+    await writeCurrentQuestion(currentQuestion.id).catch(console.error);
 
     // Add checks to make sure no empty fields or empty questions before starting the game
     navigate("/controller", {
@@ -284,6 +284,7 @@ export default function BoardCreator() {
 
     navigate("/controller", {
       state: {
+        currentQuestionIndex: 0,
         data: controllerData,
       },
     });
