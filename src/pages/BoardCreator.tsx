@@ -7,6 +7,7 @@ import {
   fetchQuestions,
   updateBoardStateQuestionCategories,
   writeBoardState,
+  writeCurrentQuestion,
 } from "../services/api";
 import type { Answer, Question } from "../services/api";
 
@@ -238,6 +239,8 @@ export default function BoardCreator() {
     if (!data || !currentQuestion) return;
 
     handleSaveQuestion();
+
+    writeCurrentQuestion(currentQuestion.id).catch(console.error);
 
     // Add checks to make sure no empty fields or empty questions before starting the game
     navigate("/controller", {

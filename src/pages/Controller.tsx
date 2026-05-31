@@ -161,7 +161,7 @@ export default function Controller() {
           {controllerCategories.map((item) => (
             <ControllerCategoryRow
               key={item.id}
-              onClick={handleToggleIsHidden}
+              handleClick={handleToggleIsHidden}
               {...item}
             />
           ))}
