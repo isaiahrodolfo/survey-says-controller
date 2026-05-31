@@ -96,7 +96,7 @@ export const updateBoardStateQuestionCategories = async (
   const { error } = await supabase.from("board_state").insert(
     categories.map((category) => ({
       question_id,
-      category,
+      category: category.category,
       count: category.count,
       is_hidden: true,
     })),

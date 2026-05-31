@@ -237,6 +237,8 @@ export default function BoardCreator() {
   const handleStartGameFromThisQuestion = async () => {
     if (!data || !currentQuestion) return;
 
+    handleSaveQuestion();
+
     // Add checks to make sure no empty fields or empty questions before starting the game
     navigate("/controller", {
       state: {
