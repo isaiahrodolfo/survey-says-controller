@@ -238,7 +238,7 @@ export default function BoardCreator() {
   const handleStartGameFromThisQuestion = async () => {
     if (!data || !currentQuestion) return;
 
-    handleSaveQuestion();
+    await handleSaveQuestion();
 
     await writeCurrentQuestion(currentQuestion.id).catch(console.error);
 
