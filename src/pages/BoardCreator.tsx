@@ -235,7 +235,15 @@ export default function BoardCreator() {
   };
 
   const handleStartGameFromThisQuestion = async () => {
+    if (!data || !currentQuestion) return;
+
     // Add checks to make sure no empty fields or empty questions before starting the game
+    navigate("/controller", {
+      state: {
+        currentQuestionIndex: currentQuestion.id - 1, // adjust for 0-based index
+        data,
+      },
+    });
   };
 
   const handleSaveAllQuestionsAndStartGame = async () => {

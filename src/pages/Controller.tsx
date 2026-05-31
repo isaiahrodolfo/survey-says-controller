@@ -27,7 +27,7 @@ type ControllerQuestion = {
 export default function Controller() {
   const location = useLocation();
 
-  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0); // default to first question, adjust if navigation state provides a current question
   const [questions, setQuestions] = useState<ControllerQuestion[]>([]);
 
   const currentQuestion = questions[selectedQuestionIndex];
@@ -76,6 +76,13 @@ export default function Controller() {
         );
 
         setQuestions(enriched);
+
+        // 3. Set selected question index based on navigation state or default to 0
+        if (location.state?.currentQuestionIndex) {
+          setSelectedQuestionIndex(location.state.currentQuestionIndex);
+        } else {
+          setSelectedQuestionIndex(0);
+        }
       } catch (error) {
         console.error("Error fetching questions:", error);
       }
